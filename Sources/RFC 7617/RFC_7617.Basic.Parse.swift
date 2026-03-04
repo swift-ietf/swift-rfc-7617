@@ -1,5 +1,5 @@
 //
-//  RFC_7617.Parse.Credentials.swift
+//  RFC_7617.Basic.Parse.swift
 //  swift-rfc-7617
 //
 //  HTTP Basic Authentication: "Basic" SP base64(user:pass)
@@ -7,7 +7,7 @@
 
 public import Parser_Primitives
 
-extension RFC_7617.Parse {
+extension RFC_7617.Basic {
     /// Parses HTTP Basic Authentication credentials per RFC 7617 Section 2.
     ///
     /// `credentials = "Basic" 1*SP token68`
@@ -16,14 +16,14 @@ extension RFC_7617.Parse {
     ///
     /// Returns the raw Base64-encoded token (decoding is left to the caller).
     /// The prefix match is case-insensitive.
-    public struct Credentials<Input: Collection.Slice.`Protocol`>: Sendable
+    public struct Parse<Input: Collection.Slice.`Protocol`>: Sendable
     where Input: Sendable, Input.Element == UInt8 {
         @inlinable
         public init() {}
     }
 }
 
-extension RFC_7617.Parse.Credentials {
+extension RFC_7617.Basic.Parse {
     public struct Output: Sendable {
         /// The raw Base64-encoded credentials (everything after "Basic ")
         public let token68: Input
@@ -41,9 +41,9 @@ extension RFC_7617.Parse.Credentials {
     }
 }
 
-extension RFC_7617.Parse.Credentials: Parser.`Protocol` {
+extension RFC_7617.Basic.Parse: Parser.`Protocol` {
     public typealias ParseOutput = Output
-    public typealias Failure = RFC_7617.Parse.Credentials<Input>.Error
+    public typealias Failure = RFC_7617.Basic.Parse<Input>.Error
 
     @inlinable
     public func parse(_ input: inout Input) throws(Failure) -> Output {
