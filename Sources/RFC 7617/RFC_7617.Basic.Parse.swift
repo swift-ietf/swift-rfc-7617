@@ -42,7 +42,6 @@ extension RFC_7617.Basic.Parse {
 }
 
 extension RFC_7617.Basic.Parse: Parser.`Protocol` {
-    public typealias ParseOutput = Output
     public typealias Failure = RFC_7617.Basic.Parse<Input>.Error
 
     @inlinable
