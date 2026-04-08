@@ -11,7 +11,8 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import ASCII
+public import ASCII_Serializer_Primitives
+public import INCITS_4_1986
 
 extension RFC_7617.Basic {
     /// A Basic authentication challenge for WWW-Authenticate header

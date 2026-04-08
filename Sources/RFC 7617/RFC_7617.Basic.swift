@@ -11,7 +11,8 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import ASCII
+public import ASCII_Serializer_Primitives
+public import INCITS_4_1986
 internal import RFC_4648
 
 extension RFC_7617 {
