@@ -17,8 +17,8 @@ import Testing
 @Suite("README Verification")
 struct ReadmeVerificationTests {
 
-    @Test("Create Basic authentication credentials")
-    func createBasicCredentials() throws {
+    @Test
+    func `Create Basic authentication credentials`() throws {
         let credentials = try RFC_7617.Basic(userID: "user", password: "pass")
 
         // Serialize to Authorization header
@@ -26,16 +26,16 @@ struct ReadmeVerificationTests {
         #expect(authHeader == "Basic dXNlcjpwYXNz")
     }
 
-    @Test("Parse credentials from Authorization header")
-    func parseCredentials() throws {
+    @Test
+    func `Parse credentials from Authorization header`() throws {
         let headerValue = "Basic dXNlcjpwYXNz"
         let credentials = try RFC_7617.Basic(ascii: headerValue.utf8)
         #expect(credentials.userID == "user")
         #expect(credentials.password == "pass")
     }
 
-    @Test("Create authentication challenges")
-    func createChallenge() throws {
+    @Test
+    func `Create authentication challenges`() throws {
         let challenge = try RFC_7617.Basic.Challenge(realm: "api")
 
         let wwwAuthHeader = String(challenge)
@@ -46,8 +46,8 @@ struct ReadmeVerificationTests {
         #expect(utf8Header == #"Basic realm="api", charset="UTF-8""#)
     }
 
-    @Test("Parse challenge from WWW-Authenticate header")
-    func parseChallenge() throws {
+    @Test
+    func `Parse challenge from WWW-Authenticate header`() throws {
         let headerValue = "Basic realm=\"api\", charset=\"UTF-8\""
         let challenge = try RFC_7617.Basic.Challenge(ascii: headerValue.utf8)
         #expect(challenge.realm == "api")
