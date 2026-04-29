@@ -1,0 +1,10 @@
+# .github/metadata.yaml
+# Triaged by AI-assisted bulk pass (2026-04-29).
+description: "Swift implementation of RFC 7617: The 'Basic' HTTP Authentication Scheme."
+topics:
+  - standards
+  - rfc
+  - rfc-7617
+  - http
+  - authentication
+homepage: "https://swift-institute.org"
