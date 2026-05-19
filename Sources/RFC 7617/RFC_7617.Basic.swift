@@ -77,12 +77,12 @@ extension RFC_7617 {
     }
 }
 
-extension [UInt8] {
+extension Array where Element == ASCII.Code {
     /// "Basic" prefix bytes (mixed case as commonly serialized)
-    static let basic: Self = [.ascii.B, .ascii.a, .ascii.s, .ascii.i, .ascii.c]
+    static let basic: Self = [.B, .a, .s, .i, .c]
 
     /// "basic" lowercase prefix bytes (for case-insensitive comparison)
-    static let basicLower: Self = [.ascii.b, .ascii.a, .ascii.s, .ascii.i, .ascii.c]
+    static let basicLower: Self = [.b, .a, .s, .i, .c]
 }
 
 // MARK: - Binary.ASCII.Serializable
@@ -91,10 +91,10 @@ extension RFC_7617.Basic: Binary.ASCII.Serializable {
     public static func serialize<Buffer>(
         ascii credentials: RFC_7617.Basic,
         into buffer: inout Buffer
-    ) where Buffer: RangeReplaceableCollection, Buffer.Element == UInt8 {
+    ) where Buffer: RangeReplaceableCollection, Buffer.Element == Byte {
         // "Basic "
-        buffer.append(contentsOf: [UInt8].basic)  // "Basic "
-        buffer.append(.ascii.space)  // "Basic "
+        buffer.append(contentsOf: [ASCII.Code].basic)  // "Basic "
+        buffer.append(ASCII.Code.space)  // "Basic "
 
         // Base64 encode user-id:password (RFC 4648)
         let userPass = "\(credentials.userID):\(credentials.password)"
@@ -107,18 +107,18 @@ extension RFC_7617.Basic: Binary.ASCII.Serializable {
     /// ## Category Theory
     ///
     /// Parsing transformation:
-    /// - **Domain**: [UInt8] (ASCII bytes of "Basic <base64>")
+    /// - **Domain**: [Byte] (ASCII bytes of "Basic <base64>")
     /// - **Codomain**: RFC_7617.Basic (structured credentials)
     ///
     /// Minimizes allocations via single-pass validation and slice-based parsing:
     /// ```
-    /// [UInt8] ─validate─→ Slice ─decode─→ [UInt8] ─split─→ (String, String)
+    /// [Byte] ─validate─→ Slice ─decode─→ [UInt8] ─split─→ (String, String)
     /// ```
     ///
     /// ## Example
     ///
     /// ```swift
-    /// let credentials = try RFC_7617.Basic(ascii: "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==".utf8)
+    /// let credentials = try RFC_7617.Basic(ascii: Array<Byte>("Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==".utf8))
     /// ```
     ///
     /// - Parameter bytes: Authorization header value as ASCII bytes
@@ -127,7 +127,7 @@ extension RFC_7617.Basic: Binary.ASCII.Serializable {
         ascii bytes: Bytes,
         in context: Void = ()
     ) throws(Error)
-    where Bytes.Element == UInt8 {
+    where Bytes.Element == Byte {
         // Validate minimum length without allocation: "Basic " (6) + at least 1 base64 char
         guard bytes.count > 6 else {
             if bytes.isEmpty {
@@ -136,16 +136,18 @@ extension RFC_7617.Basic: Binary.ASCII.Serializable {
             throw Error.invalidFormat(String(decoding: bytes, as: UTF8.self), reason: "too short")
         }
 
-        // Single-pass prefix validation using iterator (no allocation)
-        var iterator = bytes.makeIterator()
+        // Type-up: lift to ASCII.Code at the entry boundary so the body works
+        // against ASCII.Code constants directly (RFC 7617 grammar is strict ASCII;
+        // non-ASCII bytes are fail-state).
+        var iterator = Array<ASCII.Code>(bytes).makeIterator()
 
         // Check "Basic " prefix case-insensitively (inline comparison, no arrays)
-        guard let b0 = iterator.next(), b0.ascii.lowercased() == .ascii.b,
-            let b1 = iterator.next(), b1.ascii.lowercased() == .ascii.a,
-            let b2 = iterator.next(), b2.ascii.lowercased() == .ascii.s,
-            let b3 = iterator.next(), b3.ascii.lowercased() == .ascii.i,
-            let b4 = iterator.next(), b4.ascii.lowercased() == .ascii.c,
-            let b5 = iterator.next(), b5 == .ascii.space
+        guard let b0 = iterator.next(), ASCII.Code(b0.lowercased()) == ASCII.Code.b,
+            let b1 = iterator.next(), ASCII.Code(b1.lowercased()) == ASCII.Code.a,
+            let b2 = iterator.next(), ASCII.Code(b2.lowercased()) == ASCII.Code.s,
+            let b3 = iterator.next(), ASCII.Code(b3.lowercased()) == ASCII.Code.i,
+            let b4 = iterator.next(), ASCII.Code(b4.lowercased()) == ASCII.Code.c,
+            let b5 = iterator.next(), b5 == ASCII.Code.space
         else {
             throw Error.invalidFormat(
                 String(decoding: bytes, as: UTF8.self),
@@ -154,7 +156,8 @@ extension RFC_7617.Basic: Binary.ASCII.Serializable {
         }
 
         // Extract Base64 portion as slice (no allocation)
-        let base64Bytes = bytes.dropFirst(6)
+        // Convert byte-domain slice to UInt8 for Base64 decode (RFC_4648 boundary)
+        let base64Bytes = Array<UInt8>(bytes.dropFirst(6))
         guard !base64Bytes.isEmpty else {
             throw Error.invalidFormat(
                 String(decoding: bytes, as: UTF8.self),
