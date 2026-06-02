@@ -22,11 +22,11 @@ let package = Package(
         .library(name: "RFC 7617", targets: ["RFC 7617"])
     ],
     dependencies: [
-        .package(path: "../../swift-primitives/swift-ascii-serializer-primitives"),
-        .package(path: "../../swift-incits/swift-incits-4-1986"),
-        .package(path: "../../swift-primitives/swift-binary-primitives"),
-        .package(path: "../swift-rfc-4648"),
-        .package(path: "../../swift-primitives/swift-parser-primitives")
+        .package(url: "https://github.com/swift-primitives/swift-ascii-serializer-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-incits/swift-incits-4-1986.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-binary-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-ietf/swift-rfc-4648.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-parser-primitives.git", branch: "main")
     ],
     targets: [
         .target(
