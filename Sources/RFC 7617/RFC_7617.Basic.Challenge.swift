@@ -12,7 +12,10 @@
 // ===----------------------------------------------------------------------===//
 
 public import ASCII_Serializer_Primitives
-public import INCITS_4_1986
+public import Binary_Serializable_Primitives
+public import Parseable_ASCII_Primitives
+public import Serializer_Primitives
+internal import INCITS_4_1986
 
 extension RFC_7617.Basic {
     /// A Basic authentication challenge for WWW-Authenticate header
@@ -72,34 +75,12 @@ extension RFC_7617.Basic {
     }
 }
 
-// MARK: - Binary.ASCII.Serializable
+// MARK: - ASCII Read
 
-extension RFC_7617.Basic.Challenge: Binary.ASCII.Serializable {
-    public static func serialize<Buffer>(
-        ascii challenge: RFC_7617.Basic.Challenge,
-        into buffer: inout Buffer
-    ) where Buffer: RangeReplaceableCollection, Buffer.Element == Byte {
-        // "Basic realm=\""
-        buffer.append(contentsOf: "Basic realm=".utf8)
-        buffer.append(ASCII.Code.quotationMark)
-
-        // Escape realm value and append
-        for byte in challenge.realm.utf8 {
-            let code = ASCII.Code(byte)
-            if code == ASCII.Code.quotationMark || code == ASCII.Code.reverseSolidus {
-                buffer.append(ASCII.Code.reverseSolidus)
-            }
-            buffer.append(code)
-        }
-        buffer.append(ASCII.Code.quotationMark)
-
-        // Optional charset parameter
-        if let charset = challenge.charset {
-            buffer.append(contentsOf: ", charset=".utf8)
-            buffer.append(ASCII.Code.quotationMark)
-            buffer.append(contentsOf: charset.utf8)
-            buffer.append(ASCII.Code.quotationMark)
-        }
+extension RFC_7617.Basic.Challenge: ASCII.Parseable {
+    /// Creates a challenge by validating `string`'s UTF-8 bytes as ASCII.
+    public init(_ string: some StringProtocol) throws(RFC_7617.Basic.Error) {
+        try self.init(ascii: [Byte](string.utf8))
     }
 
     /// Parses a Basic challenge from WWW-Authenticate header value
@@ -119,14 +100,21 @@ extension RFC_7617.Basic.Challenge: Binary.ASCII.Serializable {
     /// - Parameter bytes: WWW-Authenticate header value as ASCII bytes
     /// - Throws: `Error` if parsing fails
     public init<Bytes: Collection>(
-        ascii bytes: Bytes,
-        in context: Void = ()
+        ascii bytes: Bytes
     ) throws(RFC_7617.Basic.Error)
     where Bytes.Element == Byte {
         // Type-up: lift to ASCII.Code at the entry boundary so the body works
         // against ASCII.Code constants directly (RFC 7617 grammar is strict ASCII;
         // non-ASCII bytes are fail-state).
-        let byteArray = Array<ASCII.Code>(bytes)
+        let byteArray: [ASCII.Code]
+        do {
+            byteArray = try Array<ASCII.Code>(bytes)
+        } catch {
+            throw RFC_7617.Basic.Error.invalidFormat(
+                String(decoding: bytes, as: UTF8.self),
+                reason: "non-ASCII byte"
+            )
+        }
         guard !byteArray.isEmpty else { throw RFC_7617.Basic.Error.empty }
 
         // Must start with "Basic " (case-insensitive)
@@ -138,7 +126,7 @@ extension RFC_7617.Basic.Challenge: Binary.ASCII.Serializable {
         }
 
         let prefixBytes = Array(byteArray.prefix(5))
-        let prefixLower = prefixBytes.map { ASCII.Code($0.lowercased()) }
+        let prefixLower = prefixBytes.map { $0.lowercased() }
         let basicLower: [ASCII.Code] = [.b, .a, .s, .i, .c]
         guard prefixLower == basicLower && byteArray[5] == ASCII.Code.space else {
             throw RFC_7617.Basic.Error.invalidFormat(
@@ -206,13 +194,75 @@ extension RFC_7617.Basic.Challenge: Binary.ASCII.Serializable {
     }
 }
 
-// MARK: - Protocol Conformances
+// MARK: - ASCII Serialization
 
-extension RFC_7617.Basic.Challenge: Binary.ASCII.RawRepresentable {
-    public typealias RawValue = String
+extension RFC_7617.Basic.Challenge: Serializable, ASCII.Serializable, Binary.Serializable {
+    /// Canonical ASCII serializer for the RFC 7617 WWW-Authenticate challenge.
+    public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
+        Serializer_Primitives.Serializer.Pure { challenge, buffer in
+            var bytes: [Byte] = []
+            serializeBytes(challenge, into: &bytes)
+            buffer.append(contentsOf: bytes.map { ASCII.Code(unchecked: $0) })
+        }
+    }
+
+    /// Explicit `Binary.Serializable` witness disambiguating the two
+    /// constraint-incomparable defaults.
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        _ value: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == Byte {
+        serializeBytes(value, into: &buffer)
+    }
+
+    /// Byte-domain serialization body (RFC 7617 `challenge = "Basic" SP realm
+    /// [ SP "charset" "=" "UTF-8" ]`).
+    private static func serializeBytes<Buffer: RangeReplaceableCollection>(
+        _ challenge: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == Byte {
+        // "Basic realm=\""
+        buffer.append(contentsOf: "Basic realm=".utf8)
+        buffer.append(ASCII.Code.quotationMark)
+
+        // Escape realm value and append
+        for byte in challenge.realm.utf8 {
+            let code = ASCII.Code(byte)
+            if code == ASCII.Code.quotationMark || code == ASCII.Code.reverseSolidus {
+                buffer.append(ASCII.Code.reverseSolidus)
+            }
+            buffer.append(code)
+        }
+        buffer.append(ASCII.Code.quotationMark)
+
+        // Optional charset parameter
+        if let charset = challenge.charset {
+            buffer.append(contentsOf: ", charset=".utf8)
+            buffer.append(ASCII.Code.quotationMark)
+            buffer.append(contentsOf: charset.utf8)
+            buffer.append(ASCII.Code.quotationMark)
+        }
+    }
 }
 
-extension RFC_7617.Basic.Challenge: CustomStringConvertible {}
+// MARK: - Protocol Conformances
+
+extension RFC_7617.Basic.Challenge: Swift.RawRepresentable {
+    /// The challenge's ASCII serialization as a `String` (computed; the
+    /// rawValue is derived from serialization, not stored).
+    public var rawValue: String {
+        String(decoding: serialized.underlying, as: UTF8.self)
+    }
+
+    public init?(rawValue: String) { try? self.init(rawValue) }
+}
+
+extension RFC_7617.Basic.Challenge: CustomStringConvertible {
+    /// The challenge's ASCII serialization decoded as a `String`.
+    public var description: String {
+        String(decoding: serialized.underlying, as: UTF8.self)
+    }
+}
 
 extension RFC_7617.Basic.Challenge: Hashable {
     public func hash(into hasher: inout Hasher) {
@@ -222,22 +272,5 @@ extension RFC_7617.Basic.Challenge: Hashable {
 
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.realm == rhs.realm && lhs.charset?.lowercased() == rhs.charset?.lowercased()
-    }
-}
-
-// MARK: - Byte Serialization
-
-extension Array where Element == Byte {
-    /// Creates ASCII bytes from RFC_7617.Basic.Challenge
-    ///
-    /// ## Category Theory
-    ///
-    /// Natural transformation: RFC_7617.Basic.Challenge → [Byte]
-    /// ```
-    /// Challenge → [Byte] (ASCII) → String (UTF-8)
-    /// ```
-    public init(_ challenge: RFC_7617.Basic.Challenge) {
-        self = []
-        RFC_7617.Basic.Challenge.serialize(ascii: challenge, into: &self)
     }
 }

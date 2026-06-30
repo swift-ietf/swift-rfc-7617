@@ -12,7 +12,10 @@
 // ===----------------------------------------------------------------------===//
 
 public import ASCII_Serializer_Primitives
-public import INCITS_4_1986
+public import Binary_Serializable_Primitives
+public import Parseable_ASCII_Primitives
+public import Serializer_Primitives
+internal import INCITS_4_1986
 internal import RFC_4648
 
 extension RFC_7617 {
@@ -77,7 +80,7 @@ extension RFC_7617 {
     }
 }
 
-extension Array where Element == ASCII.Code {
+extension Array where Element == ASCII_Primitives.ASCII.Code {
     /// "Basic" prefix bytes (mixed case as commonly serialized)
     static let basic: Self = [.B, .a, .s, .i, .c]
 
@@ -85,21 +88,12 @@ extension Array where Element == ASCII.Code {
     static let basicLower: Self = [.b, .a, .s, .i, .c]
 }
 
-// MARK: - Binary.ASCII.Serializable
+// MARK: - ASCII Read
 
-extension RFC_7617.Basic: Binary.ASCII.Serializable {
-    public static func serialize<Buffer>(
-        ascii credentials: RFC_7617.Basic,
-        into buffer: inout Buffer
-    ) where Buffer: RangeReplaceableCollection, Buffer.Element == Byte {
-        // "Basic "
-        buffer.append(contentsOf: [ASCII.Code].basic)  // "Basic "
-        buffer.append(ASCII.Code.space)  // "Basic "
-
-        // Base64 encode user-id:password (RFC 4648)
-        let userPass = "\(credentials.userID):\(credentials.password)"
-        let base64 = RFC_4648.Base64.encode(Array(userPass.utf8))
-        buffer.append(contentsOf: base64)
+extension RFC_7617.Basic: ASCII.Parseable {
+    /// Creates Basic credentials by validating `string`'s UTF-8 bytes as ASCII.
+    public init(_ string: some StringProtocol) throws(Error) {
+        try self.init(ascii: [Byte](string.utf8))
     }
 
     /// Parses Basic credentials from Authorization header value
@@ -124,8 +118,7 @@ extension RFC_7617.Basic: Binary.ASCII.Serializable {
     /// - Parameter bytes: Authorization header value as ASCII bytes
     /// - Throws: `Error` if parsing fails
     public init<Bytes: Collection>(
-        ascii bytes: Bytes,
-        in context: Void = ()
+        ascii bytes: Bytes
     ) throws(Error)
     where Bytes.Element == Byte {
         // Validate minimum length without allocation: "Basic " (6) + at least 1 base64 char
@@ -139,14 +132,23 @@ extension RFC_7617.Basic: Binary.ASCII.Serializable {
         // Type-up: lift to ASCII.Code at the entry boundary so the body works
         // against ASCII.Code constants directly (RFC 7617 grammar is strict ASCII;
         // non-ASCII bytes are fail-state).
-        var iterator = Array<ASCII.Code>(bytes).makeIterator()
+        let asciiBytes: [ASCII.Code]
+        do {
+            asciiBytes = try Array<ASCII.Code>(bytes)
+        } catch {
+            throw Error.invalidFormat(
+                String(decoding: bytes, as: UTF8.self),
+                reason: "non-ASCII byte"
+            )
+        }
+        var iterator = asciiBytes.makeIterator()
 
         // Check "Basic " prefix case-insensitively (inline comparison, no arrays)
-        guard let b0 = iterator.next(), ASCII.Code(b0.lowercased()) == ASCII.Code.b,
-            let b1 = iterator.next(), ASCII.Code(b1.lowercased()) == ASCII.Code.a,
-            let b2 = iterator.next(), ASCII.Code(b2.lowercased()) == ASCII.Code.s,
-            let b3 = iterator.next(), ASCII.Code(b3.lowercased()) == ASCII.Code.i,
-            let b4 = iterator.next(), ASCII.Code(b4.lowercased()) == ASCII.Code.c,
+        guard let b0 = iterator.next(), b0.lowercased() == ASCII.Code.b,
+            let b1 = iterator.next(), b1.lowercased() == ASCII.Code.a,
+            let b2 = iterator.next(), b2.lowercased() == ASCII.Code.s,
+            let b3 = iterator.next(), b3.lowercased() == ASCII.Code.i,
+            let b4 = iterator.next(), b4.lowercased() == ASCII.Code.c,
             let b5 = iterator.next(), b5 == ASCII.Code.space
         else {
             throw Error.invalidFormat(
@@ -155,18 +157,17 @@ extension RFC_7617.Basic: Binary.ASCII.Serializable {
             )
         }
 
-        // Extract Base64 portion as slice (no allocation)
-        // Convert byte-domain slice to UInt8 for Base64 decode (RFC_4648 boundary)
-        let base64Bytes = Array<UInt8>(bytes.dropFirst(6))
-        guard !base64Bytes.isEmpty else {
+        // Extract Base64 portion as [ASCII.Code] (rfc-4648 decode consumes ASCII codes)
+        let base64Codes = Array(asciiBytes.dropFirst(6))
+        guard !base64Codes.isEmpty else {
             throw Error.invalidFormat(
                 String(decoding: bytes, as: UTF8.self),
                 reason: "missing credentials"
             )
         }
 
-        // Decode Base64 directly from bytes (single allocation for decoded output)
-        guard let decoded = RFC_4648.Base64.decode(base64Bytes) else {
+        // Decode Base64 (rfc-4648: [ASCII.Code] -> [Byte]?)
+        guard let decoded = RFC_4648.Base64.decode(base64Codes) else {
             throw Error.invalidEncoding(
                 String(decoding: bytes, as: UTF8.self),
                 reason: "invalid Base64"
@@ -190,13 +191,61 @@ extension RFC_7617.Basic: Binary.ASCII.Serializable {
     }
 }
 
-// MARK: - Protocol Conformances
+// MARK: - ASCII Serialization
 
-extension RFC_7617.Basic: Binary.ASCII.RawRepresentable {
-    public typealias RawValue = String
+extension RFC_7617.Basic: Serializable, ASCII.Serializable, Binary.Serializable {
+    /// Canonical ASCII serializer for the RFC 7617 Authorization credentials.
+    public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
+        Serializer_Primitives.Serializer.Pure { credentials, buffer in
+            var bytes: [Byte] = []
+            serializeBytes(credentials, into: &bytes)
+            buffer.append(contentsOf: bytes.map { ASCII.Code(unchecked: $0) })
+        }
+    }
+
+    /// Explicit `Binary.Serializable` witness disambiguating the two
+    /// constraint-incomparable defaults.
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        _ value: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == Byte {
+        serializeBytes(value, into: &buffer)
+    }
+
+    /// Byte-domain serialization body (RFC 7617 `"Basic" SP token68`).
+    private static func serializeBytes<Buffer: RangeReplaceableCollection>(
+        _ credentials: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == Byte {
+        // "Basic "
+        buffer.append(contentsOf: [ASCII.Code].basic)  // "Basic"
+        buffer.append(ASCII.Code.space)  // " "
+
+        // Base64 encode user-id:password (RFC 4648: [Byte] -> [ASCII.Code])
+        let userPass = "\(credentials.userID):\(credentials.password)"
+        let base64 = RFC_4648.Base64.encode([Byte](userPass.utf8))
+        buffer.append(contentsOf: base64)
+    }
 }
 
-extension RFC_7617.Basic: CustomStringConvertible {}
+// MARK: - Protocol Conformances
+
+extension RFC_7617.Basic: Swift.RawRepresentable {
+    /// The credentials' ASCII serialization as a `String` (computed; the
+    /// rawValue is derived from serialization, not stored).
+    public var rawValue: String {
+        String(decoding: serialized.underlying, as: UTF8.self)
+    }
+
+    public init?(rawValue: String) { try? self.init(rawValue) }
+}
+
+extension RFC_7617.Basic: CustomStringConvertible {
+    /// The credentials' ASCII serialization decoded as a `String`.
+    public var description: String {
+        String(decoding: serialized.underlying, as: UTF8.self)
+    }
+}
 
 extension RFC_7617.Basic: Hashable {
     public func hash(into hasher: inout Hasher) {
