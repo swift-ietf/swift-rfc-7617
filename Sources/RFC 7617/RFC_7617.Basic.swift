@@ -14,7 +14,6 @@
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
 public import Parseable_ASCII_Primitives
-public import Serializer_Primitives
 internal import INCITS_4_1986
 internal import RFC_4648
 
@@ -193,14 +192,25 @@ extension RFC_7617.Basic: ASCII.Parseable {
 
 // MARK: - ASCII Serialization
 
-extension RFC_7617.Basic: Serializable, ASCII.Serializable, Binary.Serializable {
-    /// Canonical ASCII serializer for the RFC 7617 Authorization credentials.
-    public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
-        Serializer_Primitives.Serializer.Pure { credentials, buffer in
-            var bytes: [Byte] = []
-            serializeBytes(credentials, into: &bytes)
-            buffer.append(contentsOf: bytes.map { ASCII.Code(unchecked: $0) })
-        }
+extension RFC_7617.Basic: ASCII.Serializable, Binary.Serializable {
+    /// Own `ASCII.Serializable` verb ([FAM-012]) — the RFC 7617 `"Basic" SP
+    /// token68` Authorization credentials form. The Base64 leaf
+    /// (`RFC_4648.Base64.encode`) already yields `[ASCII.Code]`, so it composes
+    /// directly into the `ASCII.Code` buffer (evergreen same-format composition;
+    /// no byte-detour). Output is identical to the Binary witness body
+    /// (`serializeBytes`).
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        _ value: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == ASCII.Code {
+        // "Basic "
+        buffer.append(contentsOf: [ASCII.Code].basic)  // "Basic"
+        buffer.append(ASCII.Code.space)  // " "
+
+        // Base64 encode user-id:password (RFC 4648: [Byte] -> [ASCII.Code])
+        let userPass = "\(value.userID):\(value.password)"
+        let base64 = RFC_4648.Base64.encode([Byte](userPass.utf8))
+        buffer.append(contentsOf: base64)
     }
 
     /// Explicit `Binary.Serializable` witness disambiguating the two

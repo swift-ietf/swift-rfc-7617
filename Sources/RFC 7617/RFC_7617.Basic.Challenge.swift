@@ -14,7 +14,6 @@
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
 public import Parseable_ASCII_Primitives
-public import Serializer_Primitives
 internal import INCITS_4_1986
 
 extension RFC_7617.Basic {
@@ -196,13 +195,36 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
 
 // MARK: - ASCII Serialization
 
-extension RFC_7617.Basic.Challenge: Serializable, ASCII.Serializable, Binary.Serializable {
-    /// Canonical ASCII serializer for the RFC 7617 WWW-Authenticate challenge.
-    public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
-        Serializer_Primitives.Serializer.Pure { challenge, buffer in
-            var bytes: [Byte] = []
-            serializeBytes(challenge, into: &bytes)
-            buffer.append(contentsOf: bytes.map { ASCII.Code(unchecked: $0) })
+extension RFC_7617.Basic.Challenge: ASCII.Serializable, Binary.Serializable {
+    /// Own `ASCII.Serializable` verb ([FAM-012]) — the RFC 7617 `challenge =
+    /// "Basic" SP realm [ SP "charset" "=" "UTF-8" ]` form, with the realm
+    /// quoted-string escape re-expressed over `ASCII.Code` (evergreen
+    /// same-format composition; no byte-detour). Output is identical to the
+    /// Binary witness body (`serializeBytes`).
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        _ value: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == ASCII.Code {
+        // "Basic realm=\""
+        buffer.append(contentsOf: "Basic realm=".utf8.map { ASCII.Code(unchecked: Byte($0)) })
+        buffer.append(ASCII.Code.quotationMark)
+
+        // Escape realm value and append
+        for byte in value.realm.utf8 {
+            let code = ASCII.Code(byte)
+            if code == ASCII.Code.quotationMark || code == ASCII.Code.reverseSolidus {
+                buffer.append(ASCII.Code.reverseSolidus)
+            }
+            buffer.append(code)
+        }
+        buffer.append(ASCII.Code.quotationMark)
+
+        // Optional charset parameter
+        if let charset = value.charset {
+            buffer.append(contentsOf: ", charset=".utf8.map { ASCII.Code(unchecked: Byte($0)) })
+            buffer.append(ASCII.Code.quotationMark)
+            buffer.append(contentsOf: charset.utf8.map { ASCII.Code(unchecked: Byte($0)) })
+            buffer.append(ASCII.Code.quotationMark)
         }
     }
 
