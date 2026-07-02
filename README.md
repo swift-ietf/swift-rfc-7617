@@ -1,6 +1,6 @@
 # Swift RFC 7617
 
-[![CI](https://github.com/swift-standards/swift-rfc-7617/workflows/CI/badge.svg)](https://github.com/swift-standards/swift-rfc-7617/actions/workflows/ci.yml)
+[![CI](https://github.com/swift-ietf/swift-rfc-7617/workflows/CI/badge.svg)](https://github.com/swift-ietf/swift-rfc-7617/actions/workflows/ci.yml)
 ![Development Status](https://img.shields.io/badge/status-active--development-blue.svg)
 
 Swift implementation of RFC 7617: The 'Basic' HTTP Authentication Scheme.
@@ -27,7 +27,7 @@ Add swift-rfc-7617 to your package dependencies:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/swift-standards/swift-rfc-7617.git", from: "0.1.0")
+    .package(url: "https://github.com/swift-ietf/swift-rfc-7617.git", from: "0.2.3")
 ]
 ```
 
