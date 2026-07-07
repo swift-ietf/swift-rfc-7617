@@ -13,8 +13,8 @@
 
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
-public import Parseable_ASCII_Primitives
 internal import INCITS_4_1986
+public import Parseable_ASCII_Primitives
 internal import RFC_4648
 
 extension RFC_7617 {
@@ -111,7 +111,7 @@ extension RFC_7617.Basic: ASCII.Parseable {
     /// ## Example
     ///
     /// ```swift
-    /// let credentials = try RFC_7617.Basic(ascii: Array<Byte>("Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==".utf8))
+    /// let credentials = try RFC_7617.Basic(ascii: [Byte]("Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==".utf8))
     /// ```
     ///
     /// - Parameter bytes: Authorization header value as ASCII bytes
@@ -133,7 +133,7 @@ extension RFC_7617.Basic: ASCII.Parseable {
         // non-ASCII bytes are fail-state).
         let asciiBytes: [ASCII.Code]
         do {
-            asciiBytes = try Array<ASCII.Code>(bytes)
+            asciiBytes = try [ASCII.Code](bytes)
         } catch {
             throw Error.invalidFormat(
                 String(decoding: bytes, as: UTF8.self),

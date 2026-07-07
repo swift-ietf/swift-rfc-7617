@@ -18,8 +18,8 @@
 // no expected string is hand-derived.
 //
 
-import RFC_7617
 import Binary_Serializable_Primitives
+import RFC_7617
 import Testing
 
 @Suite("Basic Serialization Equivalence")

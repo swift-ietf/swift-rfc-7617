@@ -11,8 +11,8 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import Testing
 import Binary_Serializable_Primitives
+import Testing
 
 @testable import RFC_7617
 
@@ -135,7 +135,9 @@ struct RFC_7617_Tests {
         #expect(challenge.charset == nil)
 
         let headerValueWithCharset = #"Basic realm=test-realm, charset=UTF-8"#
-        let challengeWithCharset = try RFC_7617.Basic.Challenge(ascii: [Byte](headerValueWithCharset.utf8))
+        let challengeWithCharset = try RFC_7617.Basic.Challenge(
+            ascii: [Byte](headerValueWithCharset.utf8)
+        )
         #expect(challengeWithCharset.realm == "test-realm")
         #expect(challengeWithCharset.charset == "UTF-8")
     }

@@ -19,8 +19,8 @@
 // hand-derived.
 //
 
-import RFC_7617
 import Binary_Serializable_Primitives
+import RFC_7617
 import Testing
 
 @Suite("Challenge Serialization Equivalence")

@@ -13,8 +13,8 @@
 
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
-public import Parseable_ASCII_Primitives
 internal import INCITS_4_1986
+public import Parseable_ASCII_Primitives
 
 extension RFC_7617.Basic {
     /// A Basic authentication challenge for WWW-Authenticate header
@@ -93,7 +93,7 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
     /// ## Example
     ///
     /// ```swift
-    /// let challenge = try RFC_7617.Basic.Challenge(ascii: Array<Byte>("Basic realm=\"WallyWorld\"".utf8))
+    /// let challenge = try RFC_7617.Basic.Challenge(ascii: [Byte]("Basic realm=\"WallyWorld\"".utf8))
     /// ```
     ///
     /// - Parameter bytes: WWW-Authenticate header value as ASCII bytes
@@ -107,7 +107,7 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
         // non-ASCII bytes are fail-state).
         let byteArray: [ASCII.Code]
         do {
-            byteArray = try Array<ASCII.Code>(bytes)
+            byteArray = try [ASCII.Code](bytes)
         } catch {
             throw RFC_7617.Basic.Error.invalidFormat(
                 String(decoding: bytes, as: UTF8.self),
@@ -144,9 +144,14 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
         var start = 0
         func parseParam(_ lo: Int, _ hi: Int) {
             // Trim OWS
-            var a = lo, b = hi
-            while a < b && (paramBytes[a] == ASCII.Code.space || paramBytes[a] == ASCII.Code.htab) { a &+= 1 }
-            while b > a && (paramBytes[b &- 1] == ASCII.Code.space || paramBytes[b &- 1] == ASCII.Code.htab) { b &-= 1 }
+            var a = lo
+            var b = hi
+            while a < b && (paramBytes[a] == ASCII.Code.space || paramBytes[a] == ASCII.Code.htab) {
+                a &+= 1
+            }
+            while b > a
+                && (paramBytes[b &- 1] == ASCII.Code.space || paramBytes[b &- 1] == ASCII.Code.htab)
+            { b &-= 1 }
             guard a < b else { return }
 
             // Find '='
@@ -160,9 +165,13 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
             let key = String(decoding: paramBytes[a..<eq], as: UTF8.self).lowercased()
 
             // Value — strip quotes if present
-            var vlo = eq &+ 1, vhi = b
-            if vhi > vlo && paramBytes[vlo] == ASCII.Code.quotationMark && paramBytes[vhi &- 1] == ASCII.Code.quotationMark {
-                vlo &+= 1; vhi &-= 1
+            var vlo = eq &+ 1
+            var vhi = b
+            if vhi > vlo && paramBytes[vlo] == ASCII.Code.quotationMark
+                && paramBytes[vhi &- 1] == ASCII.Code.quotationMark
+            {
+                vlo &+= 1
+                vhi &-= 1
             }
             let value = String(decoding: paramBytes[vlo..<vhi], as: UTF8.self)
 
