@@ -101,7 +101,7 @@ extension RFC_7617.Basic.Parse: Parser.`Protocol` {
     }
 
     @inlinable
-    static func _isToken68Char(_ byte: UInt8) -> Bool {
+    package static func _isToken68Char(_ byte: UInt8) -> Bool {
         return switch byte {
         case 0x41...0x5A: true  // A-Z
         case 0x61...0x7A: true  // a-z

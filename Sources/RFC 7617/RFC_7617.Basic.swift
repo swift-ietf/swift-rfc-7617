@@ -132,7 +132,7 @@ extension RFC_7617.Basic: ASCII.Parseable {
         // against ASCII.Code constants directly (RFC 7617 grammar is strict ASCII;
         // non-ASCII bytes are fail-state).
         let asciiBytes: [ASCII.Code]
-        do {
+        do throws(ASCII.Code.Error) {
             asciiBytes = try [ASCII.Code](bytes)
         } catch {
             throw Error.invalidFormat(

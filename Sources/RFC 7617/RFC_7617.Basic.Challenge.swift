@@ -106,7 +106,7 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
         // against ASCII.Code constants directly (RFC 7617 grammar is strict ASCII;
         // non-ASCII bytes are fail-state).
         let byteArray: [ASCII.Code]
-        do {
+        do throws(ASCII.Code.Error) {
             byteArray = try [ASCII.Code](bytes)
         } catch {
             throw RFC_7617.Basic.Error.invalidFormat(
