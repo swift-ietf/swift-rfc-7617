@@ -22,22 +22,24 @@ import Binary_Serializable_Primitives
 import RFC_7617
 import Testing
 
-@Suite("Basic Serialization Equivalence")
-struct BasicSerializationEquivalenceTests {
+extension RFC_7617.Basic {
+    @Suite("Basic Serialization Equivalence")
+    struct Test {
 
-    @Test
-    func `ASCII verb output equals Binary witness output for the Base64 encode path`() throws {
-        // Credentials whose user-pass contains multi-byte UTF-8 (non-trivial
-        // bytes) exercise the Base64 leaf both verbs share.
-        let basic = try RFC_7617.Basic(userID: "Aladdin", password: "öpen sésame")
+        @Test
+        func `ASCII verb output equals Binary witness output for the Base64 encode path`() throws {
+            // Credentials whose user-pass contains multi-byte UTF-8 (non-trivial
+            // bytes) exercise the Base64 leaf both verbs share.
+            let basic = try RFC_7617.Basic(userID: "Aladdin", password: "öpen sésame")
 
-        // ASCII.Serializable verb output, projected to bytes.
-        let viaASCII: [Byte] = basic.serialized
+            // ASCII.Serializable verb output, projected to bytes.
+            let viaASCII: [Byte] = basic.serialized
 
-        // Binary.Serializable witness output.
-        var viaBinary: [Byte] = []
-        RFC_7617.Basic.serialize(basic, into: &viaBinary)
+            // Binary.Serializable witness output.
+            var viaBinary: [Byte] = []
+            RFC_7617.Basic.serialize(basic, into: &viaBinary)
 
-        #expect(viaASCII == viaBinary)
+            #expect(viaASCII == viaBinary)
+        }
     }
 }
