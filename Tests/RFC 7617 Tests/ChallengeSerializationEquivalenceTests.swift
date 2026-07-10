@@ -28,7 +28,9 @@ extension RFC_7617.Basic.Challenge {
     struct Test {
 
         @Test
-        func `ASCII verb output equals Binary witness output for the realm quote-escape path`() throws {
+        func `ASCII verb output equals Binary witness output for the realm quote-escape path`()
+            throws
+        {
             // A realm containing both `"` and `\` forces the backslash-escape branch
             // shared by both verbs; `charset` exercises the optional parameter path.
             let challenge = try RFC_7617.Basic.Challenge(realm: #"a"b\c"#, charset: "UTF-8")
