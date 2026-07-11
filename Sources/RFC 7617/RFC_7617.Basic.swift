@@ -238,6 +238,27 @@ extension RFC_7617.Basic: ASCII.Serializable, Binary.Serializable {
     }
 }
 
+// MARK: - Authorization Header
+
+extension RFC_7617.Basic {
+    /// The `Authorization` request-header value for these credentials —
+    /// `"Basic" SP token68` per RFC 7617 §2, i.e. `"Basic " + base64(user-id ":" password)`.
+    ///
+    /// Identical to the type's ASCII serialization (the `description` / `rawValue`
+    /// string form); provided as a named accessor mirroring RFC 6750's
+    /// `Bearer.authorizationHeaderValue()` for cross-scheme parity.
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let credentials = try RFC_7617.Basic(userID: "Aladdin", password: "open sesame")
+    /// credentials.authorizationHeaderValue()  // "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
+    /// ```
+    public func authorizationHeaderValue() -> String {
+        String(decoding: serialized.underlying, as: UTF8.self)
+    }
+}
+
 // MARK: - Protocol Conformances
 
 extension RFC_7617.Basic: Swift.RawRepresentable {
