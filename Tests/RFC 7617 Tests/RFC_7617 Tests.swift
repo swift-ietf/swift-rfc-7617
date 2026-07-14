@@ -170,7 +170,10 @@ extension RFC_7617 {
 
         @Test
         func `RFC 7617.Basic.Error descriptions`() {
-            let userIDError = RFC_7617.Basic.Error.invalidUserID("test:user", reason: "contains colon")
+            let userIDError = RFC_7617.Basic.Error.invalidUserID(
+                "test:user",
+                reason: "contains colon"
+            )
             #expect(userIDError.description.contains("test:user"))
 
             let formatError = RFC_7617.Basic.Error.invalidFormat("invalid", reason: "bad format")
