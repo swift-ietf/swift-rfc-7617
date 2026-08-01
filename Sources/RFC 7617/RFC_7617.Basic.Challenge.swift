@@ -69,6 +69,8 @@ extension RFC_7617.Basic {
                     throw RFC_7617.Basic.Error.invalidCharset(charset)
                 }
             }
+            // swift-linter:disable:next unchecked call site
+            // REASON: same-package extension-init internal use — `charset` was just validated above.
             self.init(__unchecked: (), realm: realm, charset: charset)
         }
     }
@@ -98,7 +100,7 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
     ///
     /// - Parameter bytes: WWW-Authenticate header value as ASCII bytes
     /// - Throws: `Error` if parsing fails
-    public init<Bytes: Collection>(
+    public init<Bytes: Swift.Collection>(
         ascii bytes: Bytes
     ) throws(RFC_7617.Basic.Error)
     where Bytes.Element == Byte {
@@ -155,12 +157,8 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
             guard a < b else { return }
 
             // Find '='
-            var eqIdx: Int? = nil
-            for j in a..<b where paramBytes[j] == ASCII.Code.equalsSign {
-                eqIdx = j
-                break
-            }
-            guard let eq = eqIdx else { return }
+            guard let eq = (a..<b).first(where: { paramBytes[$0] == ASCII.Code.equalsSign })
+            else { return }
 
             let key = String(decoding: paramBytes[a..<eq], as: UTF8.self).lowercased()
 
@@ -182,7 +180,7 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
             }
         }
 
-        for idx in 0..<paramBytes.count {
+        paramBytes.indices.forEach { idx in
             if paramBytes[idx] == ASCII.Code.comma {
                 parseParam(start, idx)
                 start = idx &+ 1
@@ -285,7 +283,13 @@ extension RFC_7617.Basic.Challenge: Swift.RawRepresentable {
         String(decoding: serialized.underlying, as: UTF8.self)
     }
 
-    public init?(rawValue: String) { try? self.init(rawValue) }
+    public init?(rawValue: String) {
+        do throws(RFC_7617.Basic.Error) {
+            try self.init(rawValue)
+        } catch {
+            return nil
+        }
+    }
 }
 
 extension RFC_7617.Basic.Challenge: CustomStringConvertible {

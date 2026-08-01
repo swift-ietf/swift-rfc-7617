@@ -74,6 +74,8 @@ extension RFC_7617 {
             guard !userID.utf8.contains(0x3A) else {
                 throw Error.invalidUserID(userID, reason: "user-id cannot contain colon")
             }
+            // swift-linter:disable:next unchecked call site
+            // REASON: same-package extension-init internal use — `userID` was just validated colon-free above.
             self.init(__unchecked: (), userID: userID, password: password)
         }
     }
@@ -116,7 +118,7 @@ extension RFC_7617.Basic: ASCII.Parseable {
     ///
     /// - Parameter bytes: Authorization header value as ASCII bytes
     /// - Throws: `Error` if parsing fails
-    public init<Bytes: Collection>(
+    public init<Bytes: Swift.Collection>(
         ascii bytes: Bytes
     ) throws(Error)
     where Bytes.Element == Byte {
@@ -268,7 +270,13 @@ extension RFC_7617.Basic: Swift.RawRepresentable {
         String(decoding: serialized.underlying, as: UTF8.self)
     }
 
-    public init?(rawValue: String) { try? self.init(rawValue) }
+    public init?(rawValue: String) {
+        do throws(Error) {
+            try self.init(rawValue)
+        } catch {
+            return nil
+        }
+    }
 }
 
 extension RFC_7617.Basic: CustomStringConvertible {

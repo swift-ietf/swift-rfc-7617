@@ -24,25 +24,12 @@ extension RFC_7617.Basic {
 }
 
 extension RFC_7617.Basic.Parse {
-    public struct Output: Sendable {
-        /// The raw Base64-encoded credentials (everything after "Basic ")
-        public let token68: Input
-
-        @inlinable
-        public init(token68: Input) {
-            self.token68 = token68
-        }
-    }
-
-    public enum Error: Swift.Error, Sendable, Equatable {
-        case expectedBasicPrefix
-        case expectedSpace
-        case emptyToken
-    }
+    public typealias Error = __RFC_7617_Basic_Parse_Error
 }
 
 extension RFC_7617.Basic.Parse: Parser.`Protocol` {
-    public typealias Failure = RFC_7617.Basic.Parse<Input>.Error
+    public typealias Failure = __RFC_7617_Basic_Parse_Error
+    public typealias Body = Never
 
     @inlinable
     public func parse(_ input: inout Input) throws(Failure) -> Output {
