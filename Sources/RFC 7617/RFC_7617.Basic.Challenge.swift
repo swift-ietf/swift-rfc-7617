@@ -64,7 +64,7 @@ extension RFC_7617.Basic {
         /// - Throws: `Error.invalidCharset` if charset is not UTF-8
         public init(realm: String, charset: String? = nil) throws(RFC_7617.Basic.Error) {
             // Per RFC 7617 Section 2.1: charset must be "UTF-8" if present (case-insensitive)
-            if let charset = charset {
+            if let charset {
                 guard charset.lowercased() == "utf-8" else {
                     throw RFC_7617.Basic.Error.invalidCharset(charset)
                 }
