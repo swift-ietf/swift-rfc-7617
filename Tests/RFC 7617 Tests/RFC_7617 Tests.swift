@@ -1,16 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-rfc-7617 open source project
-//
-// Copyright (c) 2025 Coen ten Thije Boonkkamp
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import Binary_Serializable_Primitives
 import Testing
 
@@ -26,7 +13,6 @@ extension RFC_7617 {
             #expect(basic.userID == "user")
             #expect(basic.password == "pass")
 
-            // Test userID with colon throws error
             #expect(throws: RFC_7617.Basic.Error.self) {
                 try RFC_7617.Basic(userID: "user:name", password: "pass")
             }
@@ -49,7 +35,7 @@ extension RFC_7617 {
 
         @Test
         func `Basic credentials parsing from Authorization header`() throws {
-            let headerValue = "Basic dXNlcjpwYXNz"  // "user:pass"
+            let headerValue = "Basic dXNlcjpwYXNz"
             let basic = try RFC_7617.Basic(ascii: [Byte](headerValue.utf8))
             #expect(basic.userID == "user")
             #expect(basic.password == "pass")
@@ -57,7 +43,7 @@ extension RFC_7617 {
 
         @Test
         func `Basic credentials parsing case-insensitive prefix`() throws {
-            let headerValue = "basic dXNlcjpwYXNz"  // lowercase "basic"
+            let headerValue = "basic dXNlcjpwYXNz"
             let basic = try RFC_7617.Basic(ascii: [Byte](headerValue.utf8))
             #expect(basic.userID == "user")
             #expect(basic.password == "pass")
@@ -65,23 +51,20 @@ extension RFC_7617 {
 
         @Test
         func `Basic credentials parsing error cases`() {
-            // Missing "Basic " prefix
+
             #expect(throws: RFC_7617.Basic.Error.self) {
                 try RFC_7617.Basic(ascii: [Byte]("Bearer dXNlcjpwYXNz".utf8))
             }
 
-            // Invalid Base64
             #expect(throws: RFC_7617.Basic.Error.self) {
                 try RFC_7617.Basic(ascii: [Byte]("Basic !!!invalid".utf8))
             }
 
-            // Missing colon separator
-            let noColonBase64 = "dXNlcnBhc3M="  // Base64 of "userpass"
+            let noColonBase64 = "dXNlcnBhc3M="
             #expect(throws: RFC_7617.Basic.Error.self) {
                 try RFC_7617.Basic(ascii: [Byte]("Basic \(noColonBase64)".utf8))
             }
 
-            // Empty input
             #expect(throws: RFC_7617.Basic.Error.self) {
                 try RFC_7617.Basic(ascii: [Byte]("".utf8))
             }
@@ -108,7 +91,6 @@ extension RFC_7617 {
             )
             #expect(challengeWithCharset.charset == "UTF-8")
 
-            // Test invalid charset
             #expect(throws: RFC_7617.Basic.Error.self) {
                 try RFC_7617.Basic.Challenge(realm: "test-realm", charset: "ISO-8859-1")
             }
@@ -145,17 +127,15 @@ extension RFC_7617 {
 
         @Test
         func `Basic.Challenge parsing error cases`() {
-            // Missing "Basic " prefix
+
             #expect(throws: RFC_7617.Basic.Error.self) {
                 try RFC_7617.Basic.Challenge(ascii: [Byte]("Digest realm=\"test\"".utf8))
             }
 
-            // Missing realm parameter
             #expect(throws: RFC_7617.Basic.Error.self) {
                 try RFC_7617.Basic.Challenge(ascii: [Byte]("Basic charset=\"UTF-8\"".utf8))
             }
 
-            // Empty input
             #expect(throws: RFC_7617.Basic.Error.self) {
                 try RFC_7617.Basic.Challenge(ascii: [Byte]("".utf8))
             }
@@ -199,7 +179,6 @@ extension RFC_7617 {
             #expect(basicEmptyPassword.userID == "user")
             #expect(basicEmptyPassword.password.isEmpty)
 
-            // Test round-trip encoding/decoding
             let headerValue = String(basicEmptyUserID)
             let decoded = try RFC_7617.Basic(ascii: [Byte](headerValue.utf8))
             #expect(decoded.userID.isEmpty)
@@ -212,7 +191,6 @@ extension RFC_7617 {
             #expect(basic.userID == "user")
             #expect(basic.password == "pass:word")
 
-            // Test round-trip encoding/decoding
             let headerValue = String(basic)
             let decoded = try RFC_7617.Basic(ascii: [Byte](headerValue.utf8))
             #expect(decoded.userID == "user")
@@ -243,12 +221,11 @@ extension RFC_7617 {
 
         @Test
         func `RFC 7617 example: Aladdin`() throws {
-            // Per RFC 7617 Section 2: "Aladdin:open sesame" -> "QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
+
             let basic = try RFC_7617.Basic(userID: "Aladdin", password: "open sesame")
             let headerValue = String(basic)
             #expect(headerValue == "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
 
-            // Round-trip
             let parsed = try RFC_7617.Basic(ascii: [Byte](headerValue.utf8))
             #expect(parsed.userID == "Aladdin")
             #expect(parsed.password == "open sesame")

@@ -1,16 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-rfc-7617 open source project
-//
-// Copyright (c) 2025 Coen ten Thije Boonkkamp
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import Binary_Serializable_Primitives
 import RFC_7617
 import Testing
@@ -27,7 +14,6 @@ extension `README Verification`.Unit {
     func `Create Basic authentication credentials`() throws {
         let credentials = try RFC_7617.Basic(userID: "user", password: "pass")
 
-        // Serialize to Authorization header
         let authHeader = String(credentials)
         #expect(authHeader == "Basic dXNlcjpwYXNz")
     }
