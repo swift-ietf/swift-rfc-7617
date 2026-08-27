@@ -1,7 +1,7 @@
-public import ASCII_Serializer_Primitives
-public import Binary_Serializable_Primitives
+public import ASCII_Serializer
+public import Binary_Serializable
 internal import INCITS_4_1986
-public import Parseable_ASCII_Primitives
+public import Parseable_ASCII
 internal import RFC_4648
 
 extension RFC_7617 {
@@ -28,7 +28,7 @@ extension RFC_7617 {
     }
 }
 
-extension Array where Element == ASCII_Primitives.ASCII.Code {
+extension Array where Element == ASCII.ASCII.Code {
 
     static let basic: Self = [.B, .a, .s, .i, .c]
 
