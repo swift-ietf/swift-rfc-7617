@@ -27,7 +27,7 @@ extension RFC_7617 {
     }
 }
 
-extension Array where Element == ASCII.ASCII.Code {
+extension Array where Element == ASCII::ASCII.Code {
 
     static let basic: Self = [.B, .a, .s, .i, .c]
 
