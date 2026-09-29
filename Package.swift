@@ -22,7 +22,7 @@ let package = Package(
         .package(url: "https://github.com/swift-ietf/swift-rfc-4648.git", branch: "main"),
         .package(
             url: "https://github.com/swift-atoms/swift-parser.git",
-            branch: "main", traits: ["Append", "IteratorLeaves", "Map", "Product", "Skip"]
+            branch: "main", traits: ["Append", "IteratorLeaves", "Map", "Product", "Skip", "Either", "Iterator"]
         ),
         .package(url: "https://github.com/swift-atoms/swift-ascii.git", branch: "main", traits: ["Parser", "Serializer"]),
     ],
