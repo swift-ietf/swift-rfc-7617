@@ -13,7 +13,7 @@ extension RFC_7617.Basic.Parse {
     public typealias Error = __RFC_7617_Basic_Parse_Error
 }
 
-extension RFC_7617.Basic.Parse: Parser.`Protocol` {
+extension RFC_7617.Basic.Parse: Parsing {
     public typealias Failure = __RFC_7617_Basic_Parse_Error
     public typealias Body = Never
 

@@ -1,4 +1,4 @@
-import Binary_Serializable
+import Binary
 import RFC_7617
 import Testing
 
