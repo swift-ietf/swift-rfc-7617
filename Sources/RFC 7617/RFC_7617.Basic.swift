@@ -37,7 +37,7 @@ extension Array where Element == ASCII::ASCII.Code {
 extension RFC_7617.Basic: ASCII.Parseable {
 
     public init(_ string: some StringProtocol) throws(Error) {
-        try self.init(ascii: [Byte](string.utf8))
+        try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
 
     public init<Bytes: Swift.Collection>(
@@ -54,7 +54,7 @@ extension RFC_7617.Basic: ASCII.Parseable {
 
         let asciiBytes: [ASCII.Code]
         do throws(ASCII.Code.Error) {
-            asciiBytes = try [ASCII.Code](bytes)
+            asciiBytes = try bytes.map { byte throws(ASCII.Code.Error) in try ASCII.Code(byte) }
         } catch {
             throw Error.invalidFormat(
                 String(decoding: bytes, as: UTF8.self),
@@ -91,7 +91,7 @@ extension RFC_7617.Basic: ASCII.Parseable {
             )
         }
 
-        guard let colonIndex = decoded.firstIndex(of: 0x3A) else {
+        guard let colonIndex = decoded.firstIndex(of: Byte(0x3A)) else {
             throw Error.invalidFormat(
                 String(decoding: decoded, as: UTF8.self),
                 reason: "credentials must contain colon separator"
@@ -116,7 +116,7 @@ extension RFC_7617.Basic: ASCII.Serializable, Binary.Serializable {
         buffer.append(ASCII.Code.space)
 
         let userPass = "\(value.userID):\(value.password)"
-        let base64 = RFC_4648.Base64.encode([Byte](userPass.utf8))
+        let base64 = RFC_4648.Base64.encode([Byte](utf8: userPass))
         buffer.append(contentsOf: base64)
     }
 
@@ -132,26 +132,26 @@ extension RFC_7617.Basic: ASCII.Serializable, Binary.Serializable {
         into buffer: inout Buffer
     ) where Buffer.Element == Byte {
 
-        buffer.append(contentsOf: [ASCII.Code].basic)
-        buffer.append(ASCII.Code.space)
+        buffer.append(contentsOf: [ASCII.Code].basic.map(\.byte))
+        buffer.append(ASCII.Code.space.byte)
 
         let userPass = "\(credentials.userID):\(credentials.password)"
-        let base64 = RFC_4648.Base64.encode([Byte](userPass.utf8))
-        buffer.append(contentsOf: base64)
+        let base64 = RFC_4648.Base64.encode([Byte](utf8: userPass))
+        buffer.append(contentsOf: base64.map(\.byte))
     }
 }
 
 extension RFC_7617.Basic {
 
     public func authorizationHeaderValue() -> String {
-        String(decoding: serialized.underlying, as: UTF8.self)
+        String(decoding: serialized, as: UTF8.self)
     }
 }
 
 extension RFC_7617.Basic: Swift.RawRepresentable {
 
     public var rawValue: String {
-        String(decoding: serialized.underlying, as: UTF8.self)
+        String(decoding: serialized, as: UTF8.self)
     }
 
     public init?(rawValue: String) {
@@ -166,7 +166,7 @@ extension RFC_7617.Basic: Swift.RawRepresentable {
 extension RFC_7617.Basic: CustomStringConvertible {
 
     public var description: String {
-        String(decoding: serialized.underlying, as: UTF8.self)
+        String(decoding: serialized, as: UTF8.self)
     }
 }
 

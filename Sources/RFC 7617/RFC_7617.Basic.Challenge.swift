@@ -31,7 +31,7 @@ extension RFC_7617.Basic {
 extension RFC_7617.Basic.Challenge: ASCII.Parseable {
 
     public init(_ string: some StringProtocol) throws(RFC_7617.Basic.Error) {
-        try self.init(ascii: [Byte](string.utf8))
+        try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
 
     public init<Bytes: Swift.Collection>(
@@ -41,7 +41,7 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
 
         let byteArray: [ASCII.Code]
         do throws(ASCII.Code.Error) {
-            byteArray = try [ASCII.Code](bytes)
+            byteArray = try bytes.map { byte throws(ASCII.Code.Error) in try ASCII.Code(byte) }
         } catch {
             throw RFC_7617.Basic.Error.invalidFormat(
                 String(decoding: bytes, as: UTF8.self),
@@ -52,7 +52,7 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
 
         guard byteArray.count > 6 else {
             throw RFC_7617.Basic.Error.invalidFormat(
-                String(decoding: byteArray, as: UTF8.self),
+                String(ascii: byteArray),
                 reason: "too short"
             )
         }
@@ -62,7 +62,7 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
         let basicLower: [ASCII.Code] = [.b, .a, .s, .i, .c]
         guard prefixLower == basicLower && byteArray[5] == ASCII.Code.space else {
             throw RFC_7617.Basic.Error.invalidFormat(
-                String(decoding: byteArray, as: UTF8.self),
+                String(ascii: byteArray),
                 reason: "must start with 'Basic '"
             )
         }
@@ -88,7 +88,7 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
             guard let eq = (a..<b).first(where: { paramBytes[$0] == ASCII.Code.equalsSign })
             else { return }
 
-            let key = String(decoding: paramBytes[a..<eq], as: UTF8.self).lowercased()
+            let key = String(ascii: paramBytes[a..<eq]).lowercased()
 
             var vlo = eq &+ 1
             var vhi = b
@@ -98,7 +98,7 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
                 vlo &+= 1
                 vhi &-= 1
             }
-            let value = String(decoding: paramBytes[vlo..<vhi], as: UTF8.self)
+            let value = String(ascii: paramBytes[vlo..<vhi])
 
             switch key {
             case "realm": realm = value
@@ -117,7 +117,7 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
 
         guard let realmValue = realm else {
             throw RFC_7617.Basic.Error.invalidFormat(
-                String(decoding: byteArray, as: UTF8.self),
+                String(ascii: byteArray),
                 reason: "realm parameter is required"
             )
         }
@@ -165,23 +165,23 @@ extension RFC_7617.Basic.Challenge: ASCII.Serializable, Binary.Serializable {
         into buffer: inout Buffer
     ) where Buffer.Element == Byte {
 
-        buffer.append(contentsOf: "Basic realm=".utf8)
-        buffer.append(ASCII.Code.quotationMark)
+        buffer.append(contentsOf: [Byte](utf8: "Basic realm="))
+        buffer.append(ASCII.Code.quotationMark.byte)
 
         for byte in challenge.realm.utf8 {
             let code = ASCII.Code(byte)
             if code == ASCII.Code.quotationMark || code == ASCII.Code.reverseSolidus {
-                buffer.append(ASCII.Code.reverseSolidus)
+                buffer.append(ASCII.Code.reverseSolidus.byte)
             }
-            buffer.append(code)
+            buffer.append(code.byte)
         }
-        buffer.append(ASCII.Code.quotationMark)
+        buffer.append(ASCII.Code.quotationMark.byte)
 
         if let charset = challenge.charset {
-            buffer.append(contentsOf: ", charset=".utf8)
-            buffer.append(ASCII.Code.quotationMark)
-            buffer.append(contentsOf: charset.utf8)
-            buffer.append(ASCII.Code.quotationMark)
+            buffer.append(contentsOf: [Byte](utf8: ", charset="))
+            buffer.append(ASCII.Code.quotationMark.byte)
+            buffer.append(contentsOf: [Byte](utf8: charset))
+            buffer.append(ASCII.Code.quotationMark.byte)
         }
     }
 }
@@ -189,7 +189,7 @@ extension RFC_7617.Basic.Challenge: ASCII.Serializable, Binary.Serializable {
 extension RFC_7617.Basic.Challenge: Swift.RawRepresentable {
 
     public var rawValue: String {
-        String(decoding: serialized.underlying, as: UTF8.self)
+        String(decoding: serialized, as: UTF8.self)
     }
 
     public init?(rawValue: String) {
@@ -204,7 +204,7 @@ extension RFC_7617.Basic.Challenge: Swift.RawRepresentable {
 extension RFC_7617.Basic.Challenge: CustomStringConvertible {
 
     public var description: String {
-        String(decoding: serialized.underlying, as: UTF8.self)
+        String(decoding: serialized, as: UTF8.self)
     }
 }
 

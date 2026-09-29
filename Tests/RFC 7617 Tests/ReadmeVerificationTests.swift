@@ -21,7 +21,7 @@ extension `README Verification`.Unit {
     @Test
     func `Parse credentials from Authorization header`() throws {
         let headerValue = "Basic dXNlcjpwYXNz"
-        let credentials = try RFC_7617.Basic(ascii: [Byte](headerValue.utf8))
+        let credentials = try RFC_7617.Basic(ascii: [Byte](utf8: headerValue))
         #expect(credentials.userID == "user")
         #expect(credentials.password == "pass")
     }
@@ -41,7 +41,7 @@ extension `README Verification`.Unit {
     @Test
     func `Parse challenge from WWW-Authenticate header`() throws {
         let headerValue = "Basic realm=\"api\", charset=\"UTF-8\""
-        let challenge = try RFC_7617.Basic.Challenge(ascii: [Byte](headerValue.utf8))
+        let challenge = try RFC_7617.Basic.Challenge(ascii: [Byte](utf8: headerValue))
         #expect(challenge.realm == "api")
         #expect(challenge.charset == "UTF-8")
     }
