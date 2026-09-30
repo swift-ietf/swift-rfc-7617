@@ -92,13 +92,25 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
 
             var vlo = eq &+ 1
             var vhi = b
-            if vhi > vlo && paramBytes[vlo] == ASCII.Code.quotationMark
+            var isQuoted = false
+            if vhi &- vlo >= 2 && paramBytes[vlo] == ASCII.Code.quotationMark
                 && paramBytes[vhi &- 1] == ASCII.Code.quotationMark
             {
                 vlo &+= 1
                 vhi &-= 1
+                isQuoted = true
             }
-            let value = String(ascii: paramBytes[vlo..<vhi])
+            var codes: [ASCII.Code] = []
+            var escaped = false
+            for code in paramBytes[vlo..<vhi] {
+                if isQuoted && !escaped && code == ASCII.Code.reverseSolidus {
+                    escaped = true
+                } else {
+                    codes.append(code)
+                    escaped = false
+                }
+            }
+            let value = String(ascii: codes[...])
 
             switch key {
             case "realm": realm = value
@@ -107,8 +119,17 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
             }
         }
 
-        paramBytes.indices.forEach { idx in
-            if paramBytes[idx] == ASCII.Code.comma {
+        var inQuotes = false
+        var escaped = false
+        for idx in paramBytes.indices {
+            let code = paramBytes[idx]
+            if escaped {
+                escaped = false
+            } else if inQuotes && code == ASCII.Code.reverseSolidus {
+                escaped = true
+            } else if code == ASCII.Code.quotationMark {
+                inQuotes.toggle()
+            } else if code == ASCII.Code.comma && !inQuotes {
                 parseParam(start, idx)
                 start = idx &+ 1
             }
