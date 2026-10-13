@@ -1,6 +1,6 @@
 extension RFC_7617.Basic {
 
-    public enum Error: Swift.Error, Sendable, Equatable {
+    public enum Error: Swift::Error, Sendable, Equatable {
 
         case empty
 

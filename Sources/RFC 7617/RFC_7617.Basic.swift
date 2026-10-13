@@ -40,7 +40,7 @@ extension RFC_7617.Basic: ASCII.Parseable {
         try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
 
-    public init<Bytes: Swift.Collection>(
+    public init<Bytes: Swift::Collection>(
         ascii bytes: Bytes
     ) throws(Error)
     where Bytes.Element == Byte {
@@ -148,7 +148,7 @@ extension RFC_7617.Basic {
     }
 }
 
-extension RFC_7617.Basic: Swift.RawRepresentable {
+extension RFC_7617.Basic: Swift::RawRepresentable {
 
     public var rawValue: String {
         String(decoding: serialized, as: UTF8.self)
