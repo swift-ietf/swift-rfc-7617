@@ -3,7 +3,9 @@ import Testing
 
 @testable import RFC_7617
 
-extension RFC_7617 {
+enum `RFC_7617 Tests` {}
+
+extension `RFC_7617 Tests` {
     @Suite("RFC 7617 Tests")
     struct Test {
 

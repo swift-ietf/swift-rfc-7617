@@ -2,7 +2,9 @@ import Binary
 import RFC_7617
 import Testing
 
-extension RFC_7617.Basic.Challenge {
+enum `RFC_7617.Basic.Challenge Tests` {}
+
+extension `RFC_7617.Basic.Challenge Tests` {
     @Suite("Challenge Serialization Equivalence")
     struct Test {
 

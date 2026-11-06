@@ -3,7 +3,7 @@ import Testing
 
 @testable import RFC_7617
 
-extension RFC_7617.Test {
+extension `RFC_7617 Tests`.Test {
 
     @Test
     func `Basic authorizationHeaderValue equals serialization`() throws {

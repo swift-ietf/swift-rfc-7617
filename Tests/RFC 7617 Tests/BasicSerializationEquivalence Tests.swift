@@ -2,7 +2,9 @@ import Binary
 import RFC_7617
 import Testing
 
-extension RFC_7617.Basic {
+enum `RFC_7617.Basic Tests` {}
+
+extension `RFC_7617.Basic Tests` {
     @Suite("Basic Serialization Equivalence")
     struct Test {
 
