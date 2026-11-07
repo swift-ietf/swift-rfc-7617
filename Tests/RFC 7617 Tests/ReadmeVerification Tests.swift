@@ -2,14 +2,18 @@ import Binary
 import RFC_7617
 import Testing
 
-@Suite
-struct `README Verification` {
-    @Suite struct Unit {}
-    @Suite struct `Edge Case` {}
-    @Suite struct Integration {}
+enum `ReadmeVerification Tests` {}
+
+extension `ReadmeVerification Tests` {
+    @Suite
+    struct `README Verification` {
+        @Suite struct Unit {}
+        @Suite struct `Edge Case` {}
+        @Suite struct Integration {}
+    }
 }
 
-extension `README Verification`.Unit {
+extension `ReadmeVerification Tests`.`README Verification`.Unit {
     @Test
     func `Create Basic authentication credentials`() throws {
         let credentials = try RFC_7617.Basic(userID: "user", password: "pass")
