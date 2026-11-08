@@ -5,7 +5,7 @@ import Testing
 enum `RFC_7617.Basic.Challenge Tests` {}
 
 extension `RFC_7617.Basic.Challenge Tests` {
-    @Suite("Challenge Serialization Equivalence")
+    @Suite
     struct Test {
 
         @Test
