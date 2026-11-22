@@ -3,7 +3,7 @@ public import Binary
 internal import INCITS_4_1986
 internal import RFC_4648
 
-extension RFC_7617 {
+extension IETF.RFC.`7617` {
 
     public struct Basic: Sendable, Codable {
 
@@ -34,7 +34,7 @@ extension Array where Element == ASCII::ASCII.Code {
     static let basicLower: Self = [.b, .a, .s, .i, .c]
 }
 
-extension RFC_7617.Basic: ASCII.Parseable {
+extension IETF.RFC.`7617`.Basic: ASCII.Parseable {
 
     public init(_ string: some StringProtocol) throws(Error) {
         try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
@@ -84,7 +84,7 @@ extension RFC_7617.Basic: ASCII.Parseable {
             )
         }
 
-        guard let decoded = RFC_4648.Base64.decode(base64Codes) else {
+        guard let decoded = IETF.RFC.`4648`.Base64.decode(base64Codes) else {
             throw Error.invalidEncoding(
                 String(decoding: bytes, as: UTF8.self),
                 reason: "invalid Base64"
@@ -105,7 +105,7 @@ extension RFC_7617.Basic: ASCII.Parseable {
     }
 }
 
-extension RFC_7617.Basic: ASCII.Serializable, Binary.Serializable {
+extension IETF.RFC.`7617`.Basic: ASCII.Serializable, Binary.Serializable {
 
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
@@ -116,7 +116,7 @@ extension RFC_7617.Basic: ASCII.Serializable, Binary.Serializable {
         buffer.append(ASCII.Code.space)
 
         let userPass = "\(value.userID):\(value.password)"
-        let base64 = RFC_4648.Base64.encode([Byte](utf8: userPass))
+        let base64 = IETF.RFC.`4648`.Base64.encode([Byte](utf8: userPass))
         buffer.append(contentsOf: base64)
     }
 
@@ -136,19 +136,19 @@ extension RFC_7617.Basic: ASCII.Serializable, Binary.Serializable {
         buffer.append(ASCII.Code.space.byte)
 
         let userPass = "\(credentials.userID):\(credentials.password)"
-        let base64 = RFC_4648.Base64.encode([Byte](utf8: userPass))
+        let base64 = IETF.RFC.`4648`.Base64.encode([Byte](utf8: userPass))
         buffer.append(contentsOf: base64.map(\.byte))
     }
 }
 
-extension RFC_7617.Basic {
+extension IETF.RFC.`7617`.Basic {
 
     public func authorizationHeaderValue() -> String {
         String(decoding: serialized, as: UTF8.self)
     }
 }
 
-extension RFC_7617.Basic: Swift::RawRepresentable {
+extension IETF.RFC.`7617`.Basic: Swift::RawRepresentable {
 
     public var rawValue: String {
         String(decoding: serialized, as: UTF8.self)
@@ -163,14 +163,14 @@ extension RFC_7617.Basic: Swift::RawRepresentable {
     }
 }
 
-extension RFC_7617.Basic: CustomStringConvertible {
+extension IETF.RFC.`7617`.Basic: CustomStringConvertible {
 
     public var description: String {
         String(decoding: serialized, as: UTF8.self)
     }
 }
 
-extension RFC_7617.Basic: Hashable {
+extension IETF.RFC.`7617`.Basic: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(userID)
         hasher.combine(password)

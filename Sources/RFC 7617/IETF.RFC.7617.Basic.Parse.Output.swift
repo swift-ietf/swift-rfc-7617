@@ -1,4 +1,4 @@
-extension RFC_7617.Basic.Parse {
+extension IETF.RFC.`7617`.Basic.Parse {
     public struct Output: Sendable {
 
         public let token68: Input

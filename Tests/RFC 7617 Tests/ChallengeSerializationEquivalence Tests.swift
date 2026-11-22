@@ -2,9 +2,9 @@ import Binary
 import RFC_7617
 import Testing
 
-enum `RFC_7617.Basic.Challenge Tests` {}
+enum `IETF.RFC.7617.Basic.Challenge Tests` {}
 
-extension `RFC_7617.Basic.Challenge Tests` {
+extension `IETF.RFC.7617.Basic.Challenge Tests` {
     @Suite
     struct Test {
 
@@ -13,12 +13,12 @@ extension `RFC_7617.Basic.Challenge Tests` {
             throws
         {
 
-            let challenge = try RFC_7617.Basic.Challenge(realm: #"a"b\c"#, charset: "UTF-8")
+            let challenge = try IETF.RFC.`7617`.Basic.Challenge(realm: #"a"b\c"#, charset: "UTF-8")
 
             let viaASCII: [Byte] = challenge.serialized
 
             var viaBinary: [Byte] = []
-            RFC_7617.Basic.Challenge.serialize(challenge, into: &viaBinary)
+            IETF.RFC.`7617`.Basic.Challenge.serialize(challenge, into: &viaBinary)
 
             #expect(viaASCII == viaBinary)
         }

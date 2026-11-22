@@ -1,6 +1,6 @@
 public import Parser
 
-extension RFC_7617.Basic {
+extension IETF.RFC.`7617`.Basic {
 
     public struct Parse<Input: Collection.Slice.`Protocol`>: Sendable
     where Input: Sendable, Input.Element == UInt8 {
@@ -9,11 +9,11 @@ extension RFC_7617.Basic {
     }
 }
 
-extension RFC_7617.Basic.Parse {
+extension IETF.RFC.`7617`.Basic.Parse {
     public typealias Error = __RFC_7617_Basic_Parse_Error
 }
 
-extension RFC_7617.Basic.Parse: Parsing {
+extension IETF.RFC.`7617`.Basic.Parse: Parsing {
 
     public typealias Failure = __RFC_7617_Basic_Parse_Error
     public typealias Body = Never

@@ -1,4 +1,4 @@
-extension RFC_7617.Basic {
+extension IETF.RFC.`7617`.Basic {
 
     public enum Error: Swift::Error, Sendable, Equatable {
 
@@ -14,7 +14,7 @@ extension RFC_7617.Basic {
     }
 }
 
-extension RFC_7617.Basic.Error: CustomStringConvertible {
+extension IETF.RFC.`7617`.Basic.Error: CustomStringConvertible {
     public var description: String {
         switch self {
         case .empty:

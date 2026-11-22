@@ -15,6 +15,7 @@ let package = Package(
         .library(name: "RFC 7617", targets: ["RFC 7617"])
     ],
     dependencies: [
+        .package(url: "https://github.com/swift-ietf/swift-rfc.git", branch: "main"),
         .package(url: "https://github.com/swift-incits/swift-incits-4-1986.git", branch: "main"),
         .package(
             url: "https://github.com/swift-atoms/swift-binary.git",
@@ -33,6 +34,7 @@ let package = Package(
         .target(
             name: "RFC 7617",
             dependencies: [
+                .product(name: "IETF RFC", package: "swift-rfc"),
                 .product(name: "INCITS 4 1986", package: "swift-incits-4-1986"),
                 .product(name: "Binary", package: "swift-binary"),
                 .product(name: "RFC 4648", package: "swift-rfc-4648"),

@@ -3,33 +3,33 @@ import Testing
 
 @testable import RFC_7617
 
-enum `RFC_7617 Tests` {}
+enum `IETF.RFC.7617 Tests` {}
 
-extension `RFC_7617 Tests` {
+extension `IETF.RFC.7617 Tests` {
     @Suite
     struct Test {
 
         @Test
         func `Basic credentials creation and validation`() throws {
-            let basic = try RFC_7617.Basic(userID: "user", password: "pass")
+            let basic = try IETF.RFC.`7617`.Basic(userID: "user", password: "pass")
             #expect(basic.userID == "user")
             #expect(basic.password == "pass")
 
-            #expect(throws: RFC_7617.Basic.Error.self) {
-                try RFC_7617.Basic(userID: "user:name", password: "pass")
+            #expect(throws: IETF.RFC.`7617`.Basic.Error.self) {
+                try IETF.RFC.`7617`.Basic(userID: "user:name", password: "pass")
             }
         }
 
         @Test
         func `Basic credentials encoding via String`() throws {
-            let basic = try RFC_7617.Basic(userID: "user", password: "pass")
+            let basic = try IETF.RFC.`7617`.Basic(userID: "user", password: "pass")
             let headerValue = String(basic)
             #expect(headerValue == "Basic dXNlcjpwYXNz")
         }
 
         @Test
         func `Basic credentials encoding via [UInt8]`() throws {
-            let basic = try RFC_7617.Basic(userID: "user", password: "pass")
+            let basic = try IETF.RFC.`7617`.Basic(userID: "user", password: "pass")
             let bytes = [UInt8](basic)
             let expected = Array("Basic dXNlcjpwYXNz".utf8)
             #expect(bytes == expected)
@@ -38,7 +38,7 @@ extension `RFC_7617 Tests` {
         @Test
         func `Basic credentials parsing from Authorization header`() throws {
             let headerValue = "Basic dXNlcjpwYXNz"
-            let basic = try RFC_7617.Basic(ascii: [Byte](utf8: headerValue))
+            let basic = try IETF.RFC.`7617`.Basic(ascii: [Byte](utf8: headerValue))
             #expect(basic.userID == "user")
             #expect(basic.password == "pass")
         }
@@ -46,7 +46,7 @@ extension `RFC_7617 Tests` {
         @Test
         func `Basic credentials parsing case-insensitive prefix`() throws {
             let headerValue = "basic dXNlcjpwYXNz"
-            let basic = try RFC_7617.Basic(ascii: [Byte](utf8: headerValue))
+            let basic = try IETF.RFC.`7617`.Basic(ascii: [Byte](utf8: headerValue))
             #expect(basic.userID == "user")
             #expect(basic.password == "pass")
         }
@@ -54,57 +54,57 @@ extension `RFC_7617 Tests` {
         @Test
         func `Basic credentials parsing error cases`() {
 
-            #expect(throws: RFC_7617.Basic.Error.self) {
-                try RFC_7617.Basic(ascii: [Byte](utf8: "Bearer dXNlcjpwYXNz"))
+            #expect(throws: IETF.RFC.`7617`.Basic.Error.self) {
+                try IETF.RFC.`7617`.Basic(ascii: [Byte](utf8: "Bearer dXNlcjpwYXNz"))
             }
 
-            #expect(throws: RFC_7617.Basic.Error.self) {
-                try RFC_7617.Basic(ascii: [Byte](utf8: "Basic !!!invalid"))
+            #expect(throws: IETF.RFC.`7617`.Basic.Error.self) {
+                try IETF.RFC.`7617`.Basic(ascii: [Byte](utf8: "Basic !!!invalid"))
             }
 
             let noColonBase64 = "dXNlcnBhc3M="
-            #expect(throws: RFC_7617.Basic.Error.self) {
-                try RFC_7617.Basic(ascii: [Byte](utf8: "Basic \(noColonBase64)"))
+            #expect(throws: IETF.RFC.`7617`.Basic.Error.self) {
+                try IETF.RFC.`7617`.Basic(ascii: [Byte](utf8: "Basic \(noColonBase64)"))
             }
 
-            #expect(throws: RFC_7617.Basic.Error.self) {
-                try RFC_7617.Basic(ascii: [Byte](utf8: ""))
+            #expect(throws: IETF.RFC.`7617`.Basic.Error.self) {
+                try IETF.RFC.`7617`.Basic(ascii: [Byte](utf8: ""))
             }
         }
 
         @Test
         func `Basic credentials with UTF-8 characters`() throws {
-            let basic = try RFC_7617.Basic(userID: "user", password: "páss")
+            let basic = try IETF.RFC.`7617`.Basic(userID: "user", password: "páss")
             let headerValue = String(basic)
-            let decoded = try RFC_7617.Basic(ascii: [Byte](utf8: headerValue))
+            let decoded = try IETF.RFC.`7617`.Basic(ascii: [Byte](utf8: headerValue))
             #expect(decoded.userID == "user")
             #expect(decoded.password == "páss")
         }
 
         @Test
         func `Basic.Challenge creation and validation`() throws {
-            let challenge = try RFC_7617.Basic.Challenge(realm: "test-realm")
+            let challenge = try IETF.RFC.`7617`.Basic.Challenge(realm: "test-realm")
             #expect(challenge.realm == "test-realm")
             #expect(challenge.charset == nil)
 
-            let challengeWithCharset = try RFC_7617.Basic.Challenge(
+            let challengeWithCharset = try IETF.RFC.`7617`.Basic.Challenge(
                 realm: "test-realm",
                 charset: "UTF-8"
             )
             #expect(challengeWithCharset.charset == "UTF-8")
 
-            #expect(throws: RFC_7617.Basic.Error.self) {
-                try RFC_7617.Basic.Challenge(realm: "test-realm", charset: "ISO-8859-1")
+            #expect(throws: IETF.RFC.`7617`.Basic.Error.self) {
+                try IETF.RFC.`7617`.Basic.Challenge(realm: "test-realm", charset: "ISO-8859-1")
             }
         }
 
         @Test
         func `Basic.Challenge WWW-Authenticate header generation`() throws {
-            let challenge = try RFC_7617.Basic.Challenge(realm: "test-realm")
+            let challenge = try IETF.RFC.`7617`.Basic.Challenge(realm: "test-realm")
             let headerValue = String(challenge)
             #expect(headerValue == #"Basic realm="test-realm""#)
 
-            let challengeWithCharset = try RFC_7617.Basic.Challenge(
+            let challengeWithCharset = try IETF.RFC.`7617`.Basic.Challenge(
                 realm: "test-realm",
                 charset: "UTF-8"
             )
@@ -115,12 +115,12 @@ extension `RFC_7617 Tests` {
         @Test
         func `Basic.Challenge parsing from WWW-Authenticate header`() throws {
             let headerValue = "Basic realm=\"test-realm\""
-            let challenge = try RFC_7617.Basic.Challenge(ascii: [Byte](utf8: headerValue))
+            let challenge = try IETF.RFC.`7617`.Basic.Challenge(ascii: [Byte](utf8: headerValue))
             #expect(challenge.realm == "test-realm")
             #expect(challenge.charset == nil)
 
             let headerValueWithCharset = #"Basic realm=test-realm, charset=UTF-8"#
-            let challengeWithCharset = try RFC_7617.Basic.Challenge(
+            let challengeWithCharset = try IETF.RFC.`7617`.Basic.Challenge(
                 ascii: [Byte](utf8: headerValueWithCharset)
             )
             #expect(challengeWithCharset.realm == "test-realm")
@@ -130,80 +130,80 @@ extension `RFC_7617 Tests` {
         @Test
         func `Basic.Challenge parsing error cases`() {
 
-            #expect(throws: RFC_7617.Basic.Error.self) {
-                try RFC_7617.Basic.Challenge(ascii: [Byte](utf8: "Digest realm=\"test\""))
+            #expect(throws: IETF.RFC.`7617`.Basic.Error.self) {
+                try IETF.RFC.`7617`.Basic.Challenge(ascii: [Byte](utf8: "Digest realm=\"test\""))
             }
 
-            #expect(throws: RFC_7617.Basic.Error.self) {
-                try RFC_7617.Basic.Challenge(ascii: [Byte](utf8: "Basic charset=\"UTF-8\""))
+            #expect(throws: IETF.RFC.`7617`.Basic.Error.self) {
+                try IETF.RFC.`7617`.Basic.Challenge(ascii: [Byte](utf8: "Basic charset=\"UTF-8\""))
             }
 
-            #expect(throws: RFC_7617.Basic.Error.self) {
-                try RFC_7617.Basic.Challenge(ascii: [Byte](utf8: ""))
+            #expect(throws: IETF.RFC.`7617`.Basic.Error.self) {
+                try IETF.RFC.`7617`.Basic.Challenge(ascii: [Byte](utf8: ""))
             }
         }
 
         @Test
         func `Basic.Challenge parsing with unquoted values`() throws {
             let headerValue = "Basic realm=test-realm"
-            let challenge = try RFC_7617.Basic.Challenge(ascii: [Byte](utf8: headerValue))
+            let challenge = try IETF.RFC.`7617`.Basic.Challenge(ascii: [Byte](utf8: headerValue))
             #expect(challenge.realm == "test-realm")
         }
 
         @Test
         func `RFC 7617.Basic.Error descriptions`() {
-            let userIDError = RFC_7617.Basic.Error.invalidUserID(
+            let userIDError = IETF.RFC.`7617`.Basic.Error.invalidUserID(
                 "test:user",
                 reason: "contains colon"
             )
             #expect(userIDError.description.contains("test:user"))
 
-            let formatError = RFC_7617.Basic.Error.invalidFormat("invalid", reason: "bad format")
+            let formatError = IETF.RFC.`7617`.Basic.Error.invalidFormat("invalid", reason: "bad format")
             #expect(formatError.description.contains("invalid"))
 
-            let encodingError = RFC_7617.Basic.Error.invalidEncoding("data", reason: "bad encoding")
+            let encodingError = IETF.RFC.`7617`.Basic.Error.invalidEncoding("data", reason: "bad encoding")
             #expect(encodingError.description.contains("data"))
 
-            let charsetError = RFC_7617.Basic.Error.invalidCharset("ISO-8859-1")
+            let charsetError = IETF.RFC.`7617`.Basic.Error.invalidCharset("ISO-8859-1")
             #expect(charsetError.description.contains("ISO-8859-1"))
 
-            let emptyError = RFC_7617.Basic.Error.empty
+            let emptyError = IETF.RFC.`7617`.Basic.Error.empty
             #expect(emptyError.description.contains("empty"))
         }
 
         @Test
         func `Edge case: empty userID or password`() throws {
-            let basicEmptyUserID = try RFC_7617.Basic(userID: "", password: "pass")
+            let basicEmptyUserID = try IETF.RFC.`7617`.Basic(userID: "", password: "pass")
             #expect(basicEmptyUserID.userID.isEmpty)
             #expect(basicEmptyUserID.password == "pass")
 
-            let basicEmptyPassword = try RFC_7617.Basic(userID: "user", password: "")
+            let basicEmptyPassword = try IETF.RFC.`7617`.Basic(userID: "user", password: "")
             #expect(basicEmptyPassword.userID == "user")
             #expect(basicEmptyPassword.password.isEmpty)
 
             let headerValue = String(basicEmptyUserID)
-            let decoded = try RFC_7617.Basic(ascii: [Byte](utf8: headerValue))
+            let decoded = try IETF.RFC.`7617`.Basic(ascii: [Byte](utf8: headerValue))
             #expect(decoded.userID.isEmpty)
             #expect(decoded.password == "pass")
         }
 
         @Test
         func `Edge case: password with colon`() throws {
-            let basic = try RFC_7617.Basic(userID: "user", password: "pass:word")
+            let basic = try IETF.RFC.`7617`.Basic(userID: "user", password: "pass:word")
             #expect(basic.userID == "user")
             #expect(basic.password == "pass:word")
 
             let headerValue = String(basic)
-            let decoded = try RFC_7617.Basic(ascii: [Byte](utf8: headerValue))
+            let decoded = try IETF.RFC.`7617`.Basic(ascii: [Byte](utf8: headerValue))
             #expect(decoded.userID == "user")
             #expect(decoded.password == "pass:word")
         }
 
         @Test
         func `Hashable conformance`() throws {
-            let basic1 = try RFC_7617.Basic(userID: "user", password: "pass")
-            let basic2 = try RFC_7617.Basic(userID: "user", password: "pass")
-            let basic3 = try RFC_7617.Basic(userID: "user", password: "different")
+            let basic1 = try IETF.RFC.`7617`.Basic(userID: "user", password: "pass")
+            let basic2 = try IETF.RFC.`7617`.Basic(userID: "user", password: "pass")
+            let basic3 = try IETF.RFC.`7617`.Basic(userID: "user", password: "different")
 
             #expect(basic1 == basic2)
             #expect(basic1.hashValue == basic2.hashValue)
@@ -212,9 +212,9 @@ extension `RFC_7617 Tests` {
 
         @Test
         func `Challenge Hashable conformance`() throws {
-            let challenge1 = try RFC_7617.Basic.Challenge(realm: "test")
-            let challenge2 = try RFC_7617.Basic.Challenge(realm: "test")
-            let challenge3 = try RFC_7617.Basic.Challenge(realm: "other")
+            let challenge1 = try IETF.RFC.`7617`.Basic.Challenge(realm: "test")
+            let challenge2 = try IETF.RFC.`7617`.Basic.Challenge(realm: "test")
+            let challenge3 = try IETF.RFC.`7617`.Basic.Challenge(realm: "other")
 
             #expect(challenge1 == challenge2)
             #expect(challenge1.hashValue == challenge2.hashValue)
@@ -224,11 +224,11 @@ extension `RFC_7617 Tests` {
         @Test
         func `RFC 7617 example: Aladdin`() throws {
 
-            let basic = try RFC_7617.Basic(userID: "Aladdin", password: "open sesame")
+            let basic = try IETF.RFC.`7617`.Basic(userID: "Aladdin", password: "open sesame")
             let headerValue = String(basic)
             #expect(headerValue == "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
 
-            let parsed = try RFC_7617.Basic(ascii: [Byte](utf8: headerValue))
+            let parsed = try IETF.RFC.`7617`.Basic(ascii: [Byte](utf8: headerValue))
             #expect(parsed.userID == "Aladdin")
             #expect(parsed.password == "open sesame")
         }

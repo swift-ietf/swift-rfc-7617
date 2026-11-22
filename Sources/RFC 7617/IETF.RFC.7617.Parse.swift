@@ -1,5 +1,5 @@
 import Parser
 
-extension RFC_7617 {
+extension IETF.RFC.`7617` {
     public enum Parse {}
 }

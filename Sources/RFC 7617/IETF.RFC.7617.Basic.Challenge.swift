@@ -2,7 +2,7 @@ public import ASCII
 public import Binary
 internal import INCITS_4_1986
 
-extension RFC_7617.Basic {
+extension IETF.RFC.`7617`.Basic {
 
     public struct Challenge: Sendable, Codable {
 
@@ -15,11 +15,11 @@ extension RFC_7617.Basic {
             self.charset = charset
         }
 
-        public init(realm: String, charset: String? = nil) throws(RFC_7617.Basic.Error) {
+        public init(realm: String, charset: String? = nil) throws(IETF.RFC.`7617`.Basic.Error) {
 
             if let charset {
                 guard charset.lowercased() == "utf-8" else {
-                    throw RFC_7617.Basic.Error.invalidCharset(charset)
+                    throw IETF.RFC.`7617`.Basic.Error.invalidCharset(charset)
                 }
             }
 
@@ -28,30 +28,30 @@ extension RFC_7617.Basic {
     }
 }
 
-extension RFC_7617.Basic.Challenge: ASCII.Parseable {
+extension IETF.RFC.`7617`.Basic.Challenge: ASCII.Parseable {
 
-    public init(_ string: some StringProtocol) throws(RFC_7617.Basic.Error) {
+    public init(_ string: some StringProtocol) throws(IETF.RFC.`7617`.Basic.Error) {
         try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
 
     public init<Bytes: Swift::Collection>(
         ascii bytes: Bytes
-    ) throws(RFC_7617.Basic.Error)
+    ) throws(IETF.RFC.`7617`.Basic.Error)
     where Bytes.Element == Byte {
 
         let byteArray: [ASCII.Code]
         do throws(ASCII.Code.Error) {
             byteArray = try bytes.map { byte throws(ASCII.Code.Error) in try ASCII.Code(byte) }
         } catch {
-            throw RFC_7617.Basic.Error.invalidFormat(
+            throw IETF.RFC.`7617`.Basic.Error.invalidFormat(
                 String(decoding: bytes, as: UTF8.self),
                 reason: "non-ASCII byte"
             )
         }
-        guard !byteArray.isEmpty else { throw RFC_7617.Basic.Error.empty }
+        guard !byteArray.isEmpty else { throw IETF.RFC.`7617`.Basic.Error.empty }
 
         guard byteArray.count > 6 else {
-            throw RFC_7617.Basic.Error.invalidFormat(
+            throw IETF.RFC.`7617`.Basic.Error.invalidFormat(
                 String(ascii: byteArray),
                 reason: "too short"
             )
@@ -61,7 +61,7 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
         let prefixLower = prefixBytes.map { $0.lowercased() }
         let basicLower: [ASCII.Code] = [.b, .a, .s, .i, .c]
         guard prefixLower == basicLower && byteArray[5] == ASCII.Code.space else {
-            throw RFC_7617.Basic.Error.invalidFormat(
+            throw IETF.RFC.`7617`.Basic.Error.invalidFormat(
                 String(ascii: byteArray),
                 reason: "must start with 'Basic '"
             )
@@ -137,7 +137,7 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
         parseParam(start, paramBytes.count)
 
         guard let realmValue = realm else {
-            throw RFC_7617.Basic.Error.invalidFormat(
+            throw IETF.RFC.`7617`.Basic.Error.invalidFormat(
                 String(ascii: byteArray),
                 reason: "realm parameter is required"
             )
@@ -147,7 +147,7 @@ extension RFC_7617.Basic.Challenge: ASCII.Parseable {
     }
 }
 
-extension RFC_7617.Basic.Challenge: ASCII.Serializable, Binary.Serializable {
+extension IETF.RFC.`7617`.Basic.Challenge: ASCII.Serializable, Binary.Serializable {
 
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
@@ -207,14 +207,14 @@ extension RFC_7617.Basic.Challenge: ASCII.Serializable, Binary.Serializable {
     }
 }
 
-extension RFC_7617.Basic.Challenge: Swift::RawRepresentable {
+extension IETF.RFC.`7617`.Basic.Challenge: Swift::RawRepresentable {
 
     public var rawValue: String {
         String(decoding: serialized, as: UTF8.self)
     }
 
     public init?(rawValue: String) {
-        do throws(RFC_7617.Basic.Error) {
+        do throws(IETF.RFC.`7617`.Basic.Error) {
             try self.init(rawValue)
         } catch {
             return nil
@@ -222,14 +222,14 @@ extension RFC_7617.Basic.Challenge: Swift::RawRepresentable {
     }
 }
 
-extension RFC_7617.Basic.Challenge: CustomStringConvertible {
+extension IETF.RFC.`7617`.Basic.Challenge: CustomStringConvertible {
 
     public var description: String {
         String(decoding: serialized, as: UTF8.self)
     }
 }
 
-extension RFC_7617.Basic.Challenge: Hashable {
+extension IETF.RFC.`7617`.Basic.Challenge: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(realm)
         hasher.combine(charset?.lowercased())
